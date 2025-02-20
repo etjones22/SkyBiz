@@ -20,17 +20,34 @@
         fetch('/api/track_items')
             .then(response => response.json())
             .then(data => {
-                // Extract data for Stock of Stonks
-                const stonksData = data["STOCK_OF_STONKS"];
-                const stonksTimestamps = stonksData.timestamps.map(ts => new Date(ts * 1000).toLocaleString());
-                const stonksPrices = stonksData.prices;
-
-                // Extract data for Booster Cookies
-                const cookiesData = data["BOOSTER_COOKIE"];
-                const cookiesTimestamps = cookiesData.timestamps.map(ts => new Date(ts * 1000).toLocaleString());
-                const cookiesPrices = cookiesData.prices;
-
-                // Create Chart for Stock of Stonks
+                if (!data || Object.keys(data).length === 0) {
+                    alert("No data available. Try again later.");
+                    return;
+                }
+    
+                // Check if Stock of Stonks data exists
+                if (!data["STOCK_OF_STONKS"] || data["STOCK_OF_STONKS"].timestamps.length === 0) {
+                    alert("No data found for Stock of Stonks.");
+                    return;
+                }
+    
+                // Check if Booster Cookie data exists
+                if (!data["BOOSTER_COOKIE"] || data["BOOSTER_COOKIE"].timestamps.length === 0) {
+                    alert("No data found for Booster Cookies.");
+                    return;
+                }
+    
+                // Extract Stock of Stonks data
+                const stonksTimestamps = data["STOCK_OF_STONKS"].timestamps.map(ts => new Date(ts * 1000).toLocaleString());
+                const stonksPrices = data["STOCK_OF_STONKS"].prices;
+                const stonksChanges = data["STOCK_OF_STONKS"].percentage_change;
+    
+                // Extract Booster Cookie data
+                const cookiesTimestamps = data["BOOSTER_COOKIE"].timestamps.map(ts => new Date(ts * 1000).toLocaleString());
+                const cookiesPrices = data["BOOSTER_COOKIE"].prices;
+                const cookiesChanges = data["BOOSTER_COOKIE"].percentage_change;
+    
+                // Create Stock of Stonks Chart
                 new Chart(document.getElementById('stonksChart').getContext('2d'), {
                     type: 'line',
                     data: {
@@ -41,18 +58,30 @@
                             borderColor: 'blue',
                             borderWidth: 2,
                             fill: false
+                        }, {
+                            label: 'Stock of Stonks % Change',
+                            data: stonksChanges,
+                            borderColor: 'green',
+                            borderWidth: 2,
+                            fill: false,
+                            yAxisID: 'percentage'
                         }]
                     },
                     options: {
                         responsive: true,
                         scales: {
                             x: { title: { display: true, text: 'Time' } },
-                            y: { title: { display: true, text: 'Price (Coins)' }, beginAtZero: false }
+                            y: { title: { display: true, text: 'Price (Coins)' }, beginAtZero: false },
+                            percentage: {
+                                type: 'linear',
+                                position: 'right',
+                                title: { display: true, text: '% Change' }
+                            }
                         }
                     }
                 });
-
-                // Create Chart for Booster Cookies
+    
+                // Create Booster Cookie Chart
                 new Chart(document.getElementById('cookiesChart').getContext('2d'), {
                     type: 'line',
                     data: {
@@ -63,19 +92,35 @@
                             borderColor: 'red',
                             borderWidth: 2,
                             fill: false
+                        }, {
+                            label: 'Booster Cookie % Change',
+                            data: cookiesChanges,
+                            borderColor: 'purple',
+                            borderWidth: 2,
+                            fill: false,
+                            yAxisID: 'percentage'
                         }]
                     },
                     options: {
                         responsive: true,
                         scales: {
                             x: { title: { display: true, text: 'Time' } },
-                            y: { title: { display: true, text: 'Price (Coins)' }, beginAtZero: false }
+                            y: { title: { display: true, text: 'Price (Coins)' }, beginAtZero: false },
+                            percentage: {
+                                type: 'linear',
+                                position: 'right',
+                                title: { display: true, text: '% Change' }
+                            }
                         }
                     }
                 });
             })
-            .catch(error => console.error("Error fetching data:", error));
+            .catch(error => {
+                console.error("Error fetching data:", error);
+                alert("Error fetching data from the API.");
+            });
     </script>
+    
 
 </body>
 </html>
