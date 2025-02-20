@@ -1,5 +1,4 @@
 flask
 requests
-sqlite3
 matplotlib
 gunicorn
