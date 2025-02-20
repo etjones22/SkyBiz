@@ -1,1 +1,1 @@
-web: gunicorn app.hypixel_tracker:app
+web: gunicorn hypixel_tracker:app

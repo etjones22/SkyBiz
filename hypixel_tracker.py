@@ -98,6 +98,12 @@ def serve_chart():
     analyze_market_trends()
     return send_file("app/static/market_chart.png", mimetype='image/png')
 
+
+@app.route('/')
+def home():
+    return "Hypixel Economy Tracker is Running!"
+
+
 # Run Flask App
 if __name__ == '__main__':
     store_bazaar_data()
