@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypixel Market Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        canvas { max-width: 800px; margin: 20px auto; display: block; }
+    </style>
+</head>
+<body>
+
+    <h1>Hypixel Stock of Stonks & Booster Cookie Prices</h1>
+    <canvas id="stonksChart"></canvas>
+    <canvas id="cookiesChart"></canvas>
+
+    <script>
+        fetch('/api/track_items')
+            .then(response => response.json())
+            .then(data => {
+                // Extract data for Stock of Stonks
+                const stonksData = data["STOCK_OF_STONKS"];
+                const stonksTimestamps = stonksData.timestamps.map(ts => new Date(ts * 1000).toLocaleString());
+                const stonksPrices = stonksData.prices;
+
+                // Extract data for Booster Cookies
+                const cookiesData = data["BOOSTER_COOKIE"];
+                const cookiesTimestamps = cookiesData.timestamps.map(ts => new Date(ts * 1000).toLocaleString());
+                const cookiesPrices = cookiesData.prices;
+
+                // Create Chart for Stock of Stonks
+                new Chart(document.getElementById('stonksChart').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: stonksTimestamps,
+                        datasets: [{
+                            label: 'Stock of Stonks Price (Coins)',
+                            data: stonksPrices,
+                            borderColor: 'blue',
+                            borderWidth: 2,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { title: { display: true, text: 'Time' } },
+                            y: { title: { display: true, text: 'Price (Coins)' }, beginAtZero: false }
+                        }
+                    }
+                });
+
+                // Create Chart for Booster Cookies
+                new Chart(document.getElementById('cookiesChart').getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: cookiesTimestamps,
+                        datasets: [{
+                            label: 'Booster Cookie Price (Coins)',
+                            data: cookiesPrices,
+                            borderColor: 'red',
+                            borderWidth: 2,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { title: { display: true, text: 'Time' } },
+                            y: { title: { display: true, text: 'Price (Coins)' }, beginAtZero: false }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error("Error fetching data:", error));
+    </script>
+
+</body>
+</html>

@@ -61,6 +61,36 @@ def get_bazaar_data():
     data = cursor.fetchall()
     return jsonify({"data": data})
 
+
+@app.route('/track')
+def track_market():
+    """Serves the tracking page for Stock of Stonks & Booster Cookies"""
+    return send_file("static/market_tracking.html")
+
+
+
+@app.route('/api/track_items', methods=['GET'])
+def get_tracked_items():
+    """Fetches historical price data for Stock of Stonks & Booster Cookies"""
+    cursor.execute("""
+        SELECT item_id, sell_price, timestamp FROM bazaar_prices
+        WHERE item_id IN ('STOCK_OF_STONKS', 'BOOSTER_COOKIE')
+        ORDER BY timestamp ASC
+    """)
+    data = cursor.fetchall()
+
+    # Convert data into a dictionary format
+    formatted_data = {}
+    for item_id, price, timestamp in data:
+        if item_id not in formatted_data:
+            formatted_data[item_id] = {"timestamps": [], "prices": []}
+        formatted_data[item_id]["timestamps"].append(timestamp)
+        formatted_data[item_id]["prices"].append(price)
+
+    return jsonify(formatted_data)
+
+
+
 # Inflation & Market Trends Analysis
 def analyze_market_trends():
     key_items = ["BOOSTER_COOKIE", "STOCK_OF_STONKS"]
