@@ -16,16 +16,18 @@ BAZAAR_URL = "https://api.hypixel.net/skyblock/bazaar"
 db_conn = sqlite3.connect("app/database.db", check_same_thread=False)
 cursor = db_conn.cursor()
 
-# Create table for Bazaar data
+# Create table for Bazaar data (Updated to track history)
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS bazaar_prices (
-        item_id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        item_id TEXT,
         sell_price REAL,
         buy_price REAL,
         timestamp INTEGER
     )
 """)
 db_conn.commit()
+
 
 # Function to fetch Bazaar data
 def fetch_bazaar_data():
@@ -44,16 +46,13 @@ def store_bazaar_data():
             cursor.execute("""
                 INSERT INTO bazaar_prices (item_id, sell_price, buy_price, timestamp)
                 VALUES (?, ?, ?, ?)
-                ON CONFLICT(item_id) DO UPDATE SET 
-                    sell_price = excluded.sell_price,
-                    buy_price = excluded.buy_price,
-                    timestamp = excluded.timestamp
             """, (item_id, sell_price, buy_price, timestamp))
 
         db_conn.commit()
         print("Bazaar data updated successfully!")
     else:
         print("Failed to fetch Bazaar data.")
+
 
 # Flask API Endpoint
 @app.route('/api/bazaar', methods=['GET'])
@@ -72,23 +71,35 @@ def track_market():
 
 @app.route('/api/track_items', methods=['GET'])
 def get_tracked_items():
-    """Fetches historical price data for Stock of Stonks & Booster Cookies"""
-
+    """Fetches historical price data for Stock of Stonks & Booster Cookies with percentage change"""
     cursor.execute("""
         SELECT item_id, sell_price, timestamp FROM bazaar_prices
         WHERE item_id IN ('STOCK_OF_STONKS', 'BOOSTER_COOKIE')
         ORDER BY timestamp ASC
     """)
     data = cursor.fetchall()
+
     # Convert data into a dictionary format
     formatted_data = {}
     for item_id, price, timestamp in data:
         if item_id not in formatted_data:
-            formatted_data[item_id] = {"timestamps": [], "prices": []}
+            formatted_data[item_id] = {"timestamps": [], "prices": [], "percentage_change": []}
         formatted_data[item_id]["timestamps"].append(timestamp)
         formatted_data[item_id]["prices"].append(price)
 
+    # Calculate percentage change
+    for item_id, values in formatted_data.items():
+        prices = values["prices"]
+        percentage_changes = [0]  # First price has no change
+        for i in range(1, len(prices)):
+            prev_price = prices[i - 1]
+            current_price = prices[i]
+            change = ((current_price - prev_price) / prev_price) * 100 if prev_price != 0 else 0
+            percentage_changes.append(round(change, 2))  # Round to 2 decimal places
+        formatted_data[item_id]["percentage_change"] = percentage_changes
+
     return jsonify(formatted_data)
+
 
 
 
