@@ -65,20 +65,19 @@ def get_bazaar_data():
 @app.route('/track')
 def track_market():
     """Serves the tracking page for Stock of Stonks & Booster Cookies"""
-    return send_file("static/market_tracking.html")
-
+    return send_file("app\static\market_tracking.html")
 
 
 @app.route('/api/track_items', methods=['GET'])
 def get_tracked_items():
     """Fetches historical price data for Stock of Stonks & Booster Cookies"""
+
     cursor.execute("""
         SELECT item_id, sell_price, timestamp FROM bazaar_prices
         WHERE item_id IN ('STOCK_OF_STONKS', 'BOOSTER_COOKIE')
         ORDER BY timestamp ASC
     """)
     data = cursor.fetchall()
-
     # Convert data into a dictionary format
     formatted_data = {}
     for item_id, price, timestamp in data:
