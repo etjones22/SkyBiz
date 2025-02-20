@@ -1,7 +1,7 @@
 import requests
 import sqlite3
 import time
-from flask import Flask, jsonify, send_file
+from flask import Flask, jsonify, send_file, send_from_directory
 import matplotlib.pyplot as plt
 
 # Flask App Initialization
@@ -65,7 +65,8 @@ def get_bazaar_data():
 @app.route('/track')
 def track_market():
     """Serves the tracking page for Stock of Stonks & Booster Cookies"""
-    return send_file("app\static\market_tracking.html")
+    
+    return send_from_directory(os.path.join(os.getcwd(), "app/static"), "market_tracking.html")
 
 
 @app.route('/api/track_items', methods=['GET'])
